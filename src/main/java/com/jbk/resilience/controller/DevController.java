@@ -14,9 +14,14 @@ public class DevController {
     @Autowired
     private ServiceSomething serviceSomething;
 
-    @GetMapping
+    @GetMapping("/sucess")
     public ResponseEntity doSomething() {
-        return ResponseEntity.ok(this.serviceSomething.doSomething());
+        return ResponseEntity.ok(this.serviceSomething.doSomethingSucess());
+    }
+
+    @GetMapping("/fallback")
+    public ResponseEntity doSomethingError() {
+        return ResponseEntity.ok(this.serviceSomething.doSomethingError());
     }
 
 }

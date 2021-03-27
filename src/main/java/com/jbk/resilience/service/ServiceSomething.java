@@ -1,51 +1,60 @@
 package com.jbk.resilience.service;
 
-import com.jbk.resilience.interfaces.AbstractCallback;
-import io.github.resilience4j.bulkhead.annotation.Bulkhead;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import com.jbk.resilience.entitie.EventType;
+import com.jbk.resilience.entitie.Evento;
+import com.jbk.resilience.exceptions.BusinessException;
+import com.jbk.resilience.interfaces.DefaultServiceMethod;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.vavr.control.Try;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Supplier;
 
+@Slf4j
 @Service
-public class ServiceSomething extends CommonsService implements AbstractCallback {
+public class ServiceSomething extends CircuitBreakService implements DefaultServiceMethod<Evento> {
 
-    private static final String BACKEND = "backend";
+    public Evento doSomethingSucess() {
 
-    @CircuitBreaker(name = BACKEND, fallbackMethod = "fallback")
-    public String doSomething() {
+        Supplier<Evento> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::execute);
 
-        return Try.of(this::execute).onFailure(this::fallback).get();
+        Evento event = Try.ofSupplier(decorated).recover(this::fallback).get();
+
+        return event;
     }
 
-    private String fallback(Throwable ex) {
-        System.out.println("Exception -> " + ex);
-        System.out.println("Message -> " + ex.getMessage());
-        System.out.println("Exception Tostrinh -> "+ex.toString());
-        System.out.println("Cause -> "+ex.getCause());
-        System.out.println("LocalizedMessage ->"+ex.getLocalizedMessage());
-        System.out.println(Arrays.stream(ex.getStackTrace()).findAny().get().getMethodName());
-        System.out.println(Arrays.stream(ex.getStackTrace()).findAny().get().getLineNumber());
-        System.out.println(Arrays.stream(ex.getStackTrace()).findAny().get().getClassName());
-        System.err.println("passei aqui throwable");
-        return "Mas aqui nos se recupera doido";
+    public Evento doSomethingError() {
+
+        Supplier<Evento> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::executeError);
+
+        Evento event = Try.ofSupplier(decorated).recover(this::fallback).get();
+
+        return event;
+    }
+
+    private Evento fallback(Throwable ex) {
+        log.error("Exception -> " + ex);
+        log.error("Message -> " + ex.getMessage());
+        log.error("Exception Tostrinh -> " + ex.toString());
+        log.error("Cause -> " + ex.getCause());
+        log.error("LocalizedMessage ->" + ex.getLocalizedMessage());
+
+        String mensagem = ex.getMessage().concat(", mas aqui nos se recupera doido");
+        log.error(mensagem);
+        return new Evento(UUID.randomUUID().toString(), mensagem, EventType.FALLBACK);
     }
 
     @Override
-    @CircuitBreaker(name = BACKEND)
-    @Bulkhead(name = BACKEND)
-    @Retry(name = BACKEND)
-    public String execute() {
-        throw new RuntimeException("Deu um pau aqui mano");
+    public Evento execute() {
+        //Aqui faz a comunicacao com terceiro
+
+        return new Evento(UUID.randomUUID().toString(), "Mensagem de deu boa", EventType.SUCESS);
     }
 
-    public String fallback(HttpServerErrorException e) {
-        System.err.println("passei aqui");
-        return "Mas aqui nos se recupera doido";
+    public Evento executeError() {
+        throw new BusinessException("Deu um pau aqui mano");
     }
 
 
