@@ -1,7 +1,7 @@
 package com.jbk.resilience.service;
 
-import com.jbk.resilience.entitie.EventType;
-import com.jbk.resilience.entitie.Evento;
+import com.jbk.resilience.enuns.EventType;
+import com.jbk.resilience.entitie.MessageEvent;
 import com.jbk.resilience.exceptions.BusinessException;
 import com.jbk.resilience.interfaces.DefaultServiceMethod;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -14,27 +14,27 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Service
-public class ServiceSomething extends CircuitBreakService implements DefaultServiceMethod<Evento> {
+public class ServiceSomething extends CircuitBreakService implements DefaultServiceMethod<MessageEvent> {
 
-    public Evento doSomethingSucess() {
+    public MessageEvent doSomethingSucess() {
 
-        Supplier<Evento> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::execute);
+        Supplier<MessageEvent> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::execute);
 
-        Evento event = Try.ofSupplier(decorated).recover(this::fallback).get();
-
-        return event;
-    }
-
-    public Evento doSomethingError() {
-
-        Supplier<Evento> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::executeError);
-
-        Evento event = Try.ofSupplier(decorated).recover(this::fallback).get();
+        MessageEvent event = Try.ofSupplier(decorated).recover(this::fallback).get();
 
         return event;
     }
 
-    private Evento fallback(Throwable ex) {
+    public MessageEvent doSomethingError() {
+
+        Supplier<MessageEvent> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::executeError);
+
+        MessageEvent event = Try.ofSupplier(decorated).recover(this::fallback).get();
+
+        return event;
+    }
+
+    private MessageEvent fallback(Throwable ex) {
         log.error("Exception -> " + ex);
         log.error("Message -> " + ex.getMessage());
         log.error("Exception Tostrinh -> " + ex.toString());
@@ -43,17 +43,17 @@ public class ServiceSomething extends CircuitBreakService implements DefaultServ
 
         String mensagem = ex.getMessage().concat(", mas aqui nos se recupera doido");
         log.error(mensagem);
-        return new Evento(UUID.randomUUID().toString(), mensagem, EventType.FALLBACK);
+        return new MessageEvent(UUID.randomUUID().toString(), mensagem, EventType.FALLBACK);
     }
 
     @Override
-    public Evento execute() {
+    public MessageEvent execute() {
         //Aqui faz a comunicacao com terceiro
 
-        return new Evento(UUID.randomUUID().toString(), "Mensagem de deu boa", EventType.SUCESS);
+        return new MessageEvent(UUID.randomUUID().toString(), "Mensagem de deu boa", EventType.SUCESS);
     }
 
-    public Evento executeError() {
+    public MessageEvent executeError() {
         throw new BusinessException("Deu um pau aqui mano");
     }
 

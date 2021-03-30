@@ -1,0 +1,9 @@
+rabbit:
+  image: rafakato/rabbitmq-delayed-message-exchange:3.6.1-management
+  hostname: rabbit
+  environment:
+    - RABBITMQ_DEFAULT_USER=admin
+    - RABBITMQ_DEFAULT_PASS=admin
+  ports:
+    - "5672:5672"
+    - "15672:15672"

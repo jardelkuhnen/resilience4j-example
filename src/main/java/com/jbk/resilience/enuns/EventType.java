@@ -1,9 +1,10 @@
-package com.jbk.resilience.entitie;
+package com.jbk.resilience.enuns;
 
 public enum EventType {
 
     FALLBACK("Fallback"),
-    SUCESS("Sucesso");
+    SUCESS("Sucesso"),
+    TESTE_MENSAGEM("testeMensagem");
 
     private final String message;
 
