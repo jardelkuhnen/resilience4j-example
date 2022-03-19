@@ -4,7 +4,7 @@ import lombok.*;
 
 @Data
 @AllArgsConstructor
-public class Evento {
+public class Event {
 
     private String uuid;
     private String mensagem;

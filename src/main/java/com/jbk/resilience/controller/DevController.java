@@ -24,4 +24,9 @@ public class DevController {
         return ResponseEntity.ok(this.serviceSomething.doSomethingError());
     }
 
+    @GetMapping("/fallbackbusines")
+    public ResponseEntity doSomethingErrorBusines() {
+        return ResponseEntity.ok(this.serviceSomething.doSomethingErrorBusines());
+    }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.Callable;
 
 @Service
 public class CircuitBreakService {
@@ -21,5 +22,9 @@ public class CircuitBreakService {
         this.circuitBreaker = circuitBreakerRegistry.circuitBreaker(CIRCUITBREAK_NAME);
     }
 
+
+    public void run(Callable callable, Callable fallback) {
+
+    }
 
 }
