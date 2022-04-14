@@ -1,5 +1,6 @@
 package com.jbk.resilience.service;
 
+import com.jbk.resilience.command.DoSomethingCommand;
 import com.jbk.resilience.entitie.Event;
 import com.jbk.resilience.entitie.EventType;
 import com.jbk.resilience.exceptions.BusinessException;
@@ -18,8 +19,6 @@ public class ServiceSomething extends CircuitBreakService implements DefaultServ
 
     public Event doSomethingSucess() {
 
-        run(this::execute, this::deuErro);
-
         Supplier<Event> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::execute);
 
         Event event = Try.ofSupplier(decorated).recover(this::fallback).get();
@@ -32,7 +31,6 @@ public class ServiceSomething extends CircuitBreakService implements DefaultServ
     }
 
     public Event doSomethingError() {
-
         Supplier<Event> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, this::executeError);
 
         Event event = Try.ofSupplier(decorated).recover(this::fallback).get();
